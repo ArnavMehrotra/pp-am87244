@@ -1,5 +1,10 @@
 T__0=1
-ID=2
-WS=3
-OTHER=4
-'hello'=1
+T__1=2
+Addop=3
+Relop=4
+Mulop=5
+ConstNum=6
+ID=7
+WS=8
+'program'=1
+'='=2

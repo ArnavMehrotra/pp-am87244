@@ -10,9 +10,45 @@ import org.antlr.v4.runtime.tree.ParseTreeVisitor;
  */
 public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	/**
-	 * Visit a parse tree produced by {@link SimpleLangParser#r}.
+	 * Visit a parse tree produced by {@link SimpleLangParser#program}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitR(SimpleLangParser.RContext ctx);
+	T visitProgram(SimpleLangParser.ProgramContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpr(SimpleLangParser.ExprContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#designatorstatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDesignatorstatement(SimpleLangParser.DesignatorstatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#operator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOperator(SimpleLangParser.OperatorContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#ident}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitIdent(SimpleLangParser.IdentContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#assignop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignop(SimpleLangParser.AssignopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#integer}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInteger(SimpleLangParser.IntegerContext ctx);
 }
