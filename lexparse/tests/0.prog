@@ -1,1 +1,1 @@
-jarjar = finglonger*5
+jarjar = finglonger + 5 * 5

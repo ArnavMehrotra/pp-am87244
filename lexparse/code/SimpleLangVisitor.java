@@ -22,11 +22,41 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExpr(SimpleLangParser.ExprContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#factor}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFactor(SimpleLangParser.FactorContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#term}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTerm(SimpleLangParser.TermContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#type}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitType(SimpleLangParser.TypeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#designatorstatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitDesignatorstatement(SimpleLangParser.DesignatorstatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#actparse}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitActparse(SimpleLangParser.ActparseContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#designator}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDesignator(SimpleLangParser.DesignatorContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#operator}.
 	 * @param ctx the parse tree
@@ -45,6 +75,30 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitAssignop(SimpleLangParser.AssignopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#addop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAddop(SimpleLangParser.AddopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#relop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRelop(SimpleLangParser.RelopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#mulop}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMulop(SimpleLangParser.MulopContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#bool}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitBool(SimpleLangParser.BoolContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#integer}.
 	 * @param ctx the parse tree
