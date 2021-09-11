@@ -1,19 +1,19 @@
 grammar SimpleLang;
 
-program: 'program' ident (constdecl | vardecl | classdecl| enumdecl | interfacedecl)* '{' (methoddecl)* '}';
+program: 'program' ID (constdecl | varDecl | classdecl| enumdecl | interfacedecl)* '{' (methoddecl)* '}';
 
-constdecl: 'const' type ident '=' (ConstNum | char | bool) (',' ident '=' (ConstNum | char | bool))* ';';
+constdecl: 'const' type ID '=' (ConstNum | charConst | bool) (',' ID '=' (ConstNum | charConst | bool))* ';';
 
-enumdecl: 'enum' ident '{' ident ('=' ConstNum)* (',' ident ('=' ConstNum)*)* '}';
+enumdecl: 'enum' ID '{' ID ('=' ConstNum)* (',' ID ('=' ConstNum)*)* '}';
 
-vardecl: type ident ('[' ']')* (',' ident ('[' ']')*)* ';';
+varDecl: type ID ('[' ']')? (',' ID ('[' ']')?)* ';' ;
 
-classdecl: 'class' ident ('extends' type)* ('implements' type (',' type)*)* '{' {vardecl}('{'(methoddecl)* '}')*'}';
+classdecl: 'class' ID ('extends' type)* ('implements' type (',' type)*)* '{' (varDecl)*('{'(methoddecl)* '}')*'}';
 
-statement: 
-| designatorstatement ';'
-| 'if' '(' condition ')' statement ('else' statement)*
-| 'for' '(' (designatorstatement)* ';' (condition)* ';' (designatorstatement)* ')' statement
+statement
+: designatorstatement ';'
+| 'if' '(' condition ')' statement ('else' statement)?
+| 'for' '(' (designatorstatement)? ';' (condition)? ';' (designatorstatement)? ')' statement
 | 'break' ';'
 | 'continue' ';'
 | 'return' (expr)* ';'
@@ -23,13 +23,13 @@ statement:
 ;
 
 
-interfacedecl: 'interface' ident '{' (interfacemethoddecl)* '}';
+interfacedecl: 'interface' ID '{' (interfacemethoddecl)* '}';
 
-interfacemethoddecl: (type | 'void') ident '(' formpars ')' ';';
+interfacemethoddecl: (type | 'void') ID '(' formpars ')' ';';
 
-methoddecl: (type | 'void') ident '(' (formpars)? ')' (vardecl)* '{' (statement)* '}';
+methoddecl: (type | 'void') ID '(' (formpars)? ')' (varDecl)* '{' (statement)* '}';
 
-formpars: type ident ('[' ']')* (','type ident ('[' ']')*)*;
+formpars: type ID ('[' ']')? (','type ID ('[' ']')?)*;
 
 //I have no idea what expr was supposed to be
 expr: ('-')* term (addop term)*;
@@ -38,7 +38,7 @@ factor: (designator '(' actparse ')') | ConstNum | bool | ('new' type '['expr']'
 
 term: factor (mulop factor)*;
 
-type: ident;
+type: ID;
 
 designatorstatement: designator ((assignop expr) | ('(' actparse ')') | '++' | '--')*;
 
@@ -50,11 +50,9 @@ condfact: expr (relop expr);
 
 actparse: expr (',' expr)*;
 
-designator: ident (('.' ident) | ('[' expr ']'))*;
+designator: ID (('.' ID) | ('[' expr ']'))*;
 
 operator: addop | relop | mulop | assignop | '&&' | '||' | '++' | '--';
-
-ident: ID;
 
 assignop: '=';
 
@@ -66,7 +64,7 @@ mulop: '*' | '/' | '%';
 
 bool: 'true' | 'false';
 
-char: '"'ID'"';
+charConst: '"'ID'"';
 
 integer: ConstNum;
 

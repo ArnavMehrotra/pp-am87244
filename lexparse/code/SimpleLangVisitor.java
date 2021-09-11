@@ -16,6 +16,60 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitProgram(SimpleLangParser.ProgramContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#constdecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConstdecl(SimpleLangParser.ConstdeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#enumdecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitEnumdecl(SimpleLangParser.EnumdeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#varDecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitVarDecl(SimpleLangParser.VarDeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#classdecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassdecl(SimpleLangParser.ClassdeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#statement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStatement(SimpleLangParser.StatementContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#interfacedecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInterfacedecl(SimpleLangParser.InterfacedeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#interfacemethoddecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInterfacemethoddecl(SimpleLangParser.InterfacemethoddeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#methoddecl}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMethoddecl(SimpleLangParser.MethoddeclContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#formpars}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFormpars(SimpleLangParser.FormparsContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -46,6 +100,24 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDesignatorstatement(SimpleLangParser.DesignatorstatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#condition}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCondition(SimpleLangParser.ConditionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#condterm}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCondterm(SimpleLangParser.CondtermContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#condfact}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCondfact(SimpleLangParser.CondfactContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#actparse}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -63,12 +135,6 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitOperator(SimpleLangParser.OperatorContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link SimpleLangParser#ident}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitIdent(SimpleLangParser.IdentContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#assignop}.
 	 * @param ctx the parse tree
@@ -99,6 +165,12 @@ public interface SimpleLangVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitBool(SimpleLangParser.BoolContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SimpleLangParser#charConst}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCharConst(SimpleLangParser.CharConstContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SimpleLangParser#integer}.
 	 * @param ctx the parse tree
