@@ -7,17 +7,16 @@ import java.util.List;
 public class Table {
     //TODO: ERROR HANDLING
     private ArrayList<ArrayList<String>> matrix;
+    private String header;
     private String outFile;
-    private boolean header;
 
-    public Table(String tableFileString, String outFile, boolean header){
-        this.header = header;
-        this.matrix = new ArrayList<>();
+    public Table(String tableFileString, String outFile,  boolean header){
         this.outFile = outFile;
+        this.matrix = new ArrayList<>();
         try{
             BufferedReader tableReader = new BufferedReader(new FileReader(Paths.get(tableFileString).toFile()));
-            if(header){
-                tableReader.readLine();
+            if(header != false){
+                this.header = tableReader.readLine();
             }
             String line = tableReader.readLine();
             int j = 0;
@@ -33,23 +32,26 @@ public class Table {
             tableReader.close();
         } catch(IOException i){
             //TODO:: handle exception
+            System.exit(-1);
         }
-
+        
     }
     public static void main(String[] args) {
+        launch_args(args);
+    }
+
+    private static void launch_args(String[] args){
+
         if(args.length == 0){
             //TODO: figure out the actual error
             System.out.println("please provide arguments");
             System.exit(-1);
         }
-        launch_args(args);
-    }
-
-    private static void launch_args(String[] args){
         boolean header = false;
         if(args[0].equals("-header")){
             header = true;
         }
+
         int cmdIndex = header ? 1 : 0;
         String cmd = args[cmdIndex];
         switch(cmd){
@@ -63,18 +65,30 @@ public class Table {
                 int[] cols = new int[colsStrings.length];
                 for(int i = 0; i<colsStrings.length; i++){
                     try {
-                        Integer.parseInt(colsStrings[i]);
+                        cols[i] = Integer.parseInt(colsStrings[i]);
                     } catch (Exception e) {
                         System.out.println("COL INDEX ERROR");
                     }
                 }
-                
                 Table table = new Table(tableFileString, outFileString, header);
                 table.printCols(cols);
                 break;
             }
             case "-sum":{
-                //TODO: sum
+                //TODO: ERROR HANDLING
+                String colString = args[cmdIndex+1];
+                String tableFileString = args[cmdIndex+2];
+                String outFileString = args[cmdIndex+3];
+                int col = 0;
+                try{
+                    col = Integer.parseInt(colString);
+                }catch(NumberFormatException n){
+                    System.out.println("COL INDEX ERROR");
+                }
+                
+                Table table = new Table(tableFileString, outFileString, header);
+                table.sumCol(col);
+                    
                 break;
             }
             case "-action":{
@@ -86,7 +100,33 @@ public class Table {
                 break;
             }
             case "-update":{
-                //TODO: update
+                //TODO: ERROR HANDLING
+                String infoString = args[cmdIndex + 1];
+                String tableFileString = args[cmdIndex+2];
+                String outFileString = args[cmdIndex + 3];
+                
+                int col = 0;
+                int row = 0;
+                String val = "";
+                String[] infoArr = infoString.split(",");
+                try{
+                    col = Integer.parseInt(infoArr[0]);
+                    row = Integer.parseInt(infoArr[1]);
+                    val = infoArr[2];
+                }catch(Exception e){
+                    System.out.println("INDEX ERROR");
+                    System.exit(-1);
+                }
+
+                Table table = new Table(tableFileString, outFileString, header);
+                table.update(col, row, val);
+
+                int[] cols = new int[table.matrix.get(0).size()];
+                for(int i = 0; i<cols.length; i++){
+                    cols[i] = i;
+                }
+                table.printCols(cols);
+
                 break;
             }
             default:{
@@ -107,25 +147,66 @@ public class Table {
 
     }
 
-    private void printCols(int[] cols){
+    public void printCols(int[] cols){
         try{
-            FileOutputStream outFileStream = new FileOutputStream(Paths.get(outFile).toFile());
-            System.out.println(matrix);
+            PrintWriter printer = new PrintWriter(outFile);
+            if(header != null){
+                printer.println(header);
+            }
             for(int i = 0; i<matrix.get(0).size(); i++){
                 for(int j = 0; j<cols.length; j++){
-                    try {
-                        outFileStream.write(matrix.get(i).get(j).getBytes()); 
-                    } catch (IndexOutOfBoundsException a) {
-                        System.out.println("COL INDEX ERROR");
-                    }
-                    outFileStream.write("\n".getBytes());
+                    printer.print(matrix.get(i).get(cols[j]) + " "); 
                 }
+                printer.print("\n");
             }
-            outFileStream.flush();
-        } catch(Exception e){
+            printer.flush();
+            printer.close();
+        } catch(FileNotFoundException f){
             //TODO: handle exception
+            System.out.println("oopside");
             System.exit(-1);
+        } catch(IndexOutOfBoundsException i){
+            System.out.println("COL INDEX ERROR");
         }
         
+    }
+
+    public void sumCol(int col){
+        float sum = 0;
+        try{
+            for(int i = 0; i<matrix.get(0).size(); i++){
+                sum += Float.parseFloat(matrix.get(i).get(col));
+            }
+            PrintWriter printer = new PrintWriter(outFile);
+            if(sum %1 == 0){
+                printer.print((int) sum);
+                printer.flush();
+                printer.close();
+                return;
+            }
+            printer.print(sum);
+            printer.flush();
+            printer.close();
+        } catch(IndexOutOfBoundsException i){
+            System.out.println("COL INDEX ERROR");
+            System.exit(-1);
+        } catch(NumberFormatException n){
+            System.out.println("TYPE ERROR");
+            System.exit(-1);
+        }
+        catch(FileNotFoundException f){
+            //TODO: handle exception properly
+            System.exit(-1);
+        }
+        return;
+    }
+
+    public void update(int col, int row, String val){
+        try{
+            matrix.get(row).set(col, val);
+        }catch(IndexOutOfBoundsException i){
+            System.out.println("INDEX ERROR");
+            System.exit(-1);
+        }
     }
 }
