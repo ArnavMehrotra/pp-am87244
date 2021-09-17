@@ -36,6 +36,40 @@ public class Table {
         }
         
     }
+    public String getVal(Pair pair){
+        int row = pair.getRow();
+        int col = pair.getCol();
+       return this.matrix.get(row).get(col); 
+    }
+
+    public Action getAction(Pair pair){
+        String[] values = getVal(pair).split("__");
+        switch(values[0]){
+            case "sum":
+                return (Action) new sum(this, pair, values[1]);
+            case "avg":
+                return (Action) new avg(this, pair, values[1]);
+            case "to_lower":
+                return (Action) new to_lower(this, pair, values[1]);
+            case "to_upper":
+                return (Action) new to_upper(this, pair, values[1]);
+        }
+        return null;
+    }
+
+    public int isAction(Pair pair){
+        String action = this.matrix.get(pair.getRow()).get(pair.getCol()).split("__")[0];
+        switch(action){
+            case "sum":
+            case "avg":
+                return 0;
+            case "to_upper":
+            case "to_lower":
+                return 1;
+            default:
+                return -1;
+        }
+    }
     public static void main(String[] args) {
         launch_args(args);
     }
@@ -57,6 +91,10 @@ public class Table {
         switch(cmd){
             case "-print":{
                 //TODO: ERROR HANDLING
+                if (args.length - cmdIndex != 4){
+                    System.out.println("OTHER ERROR");
+                    System.exit(-1);
+                } 
                 String[] colsStrings = args[cmdIndex+1].split(",");
                 String tableFileString = args[cmdIndex+2];
                 String outFileString = args[cmdIndex+3];
@@ -76,6 +114,10 @@ public class Table {
             }
             case "-sum":{
                 //TODO: ERROR HANDLING
+                if (args.length - cmdIndex != 4){
+                    System.out.println("OTHER ERROR");
+                    System.exit(-1);
+                }
                 String colString = args[cmdIndex+1];
                 String tableFileString = args[cmdIndex+2];
                 String outFileString = args[cmdIndex+3];
@@ -93,6 +135,24 @@ public class Table {
             }
             case "-action":{
                 //TODO: action
+                if (args.length - cmdIndex != 4){
+                    System.out.println("OTHER ERROR");
+                    System.exit(-1);
+                } 
+                String[] colsString = args[cmdIndex+1].split(",");
+                String tableFileString = args[cmdIndex+2];
+                String outFileString = args[cmdIndex+3];
+                
+                //read columns
+                int[] cols = new int[colsString.length];
+                for(int i = 0; i<colsString.length; i++){
+                    try {
+                        cols[i] = Integer.parseInt(colsString[i]);
+                    } catch (Exception e) {
+                        System.out.println("COL INDEX ERROR");
+                    }
+                }
+
                 break;
             }
             case "-when":{
@@ -130,12 +190,20 @@ public class Table {
                 break;
             }
             default:{
+                //TODO: ERROR HANDLING
+                
+                String opFileString = args[0];
+                String tableFileString = args[1];
+                String outFileString = args[2];
                 try {
-                    FileInputStream fileStream = new FileInputStream(Paths.get(cmd).toFile());
-                    String cmd_string = (String) fileStream.toString();
-                    String cmd_strings[] = cmd_string.split("\\s+");
-                    for(int i = 0; i<cmd_strings.length; i++){
-                        launch_args(cmd_strings[i].split("\\s+"));
+                    BufferedReader reader = new BufferedReader(new FileReader(Paths.get(opFileString).toFile()));
+                    String line = reader.readLine();
+
+                    //you could super easily overflow the stack with my program by reusing the OPFILE command in the OPFILE
+                    //that being said, I couldn't think of a better way to do this.
+                    while (line != null){
+                        String full_cmd = line + " " + tableFileString + " " + outFileString;
+                        launch_args(full_cmd.split("\\s+"));
                     }
                 } catch (Exception e) {
                     //TODO: handle exception
