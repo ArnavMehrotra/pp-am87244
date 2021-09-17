@@ -1,0 +1,28 @@
+class ToLower extends TableAction{
+    public ToLower(Table table, IndexPair index, String args){
+        super(table, index);
+        String coorString =  args.replaceAll("[\\(\\[\\]\\)]", "");
+        int row = 0;
+        int col = 0;
+        String[] pair = coorString.split(",");
+        try{
+            row = Integer.parseInt(pair[0]);
+            col = Integer.parseInt(pair[1]);
+        } catch(NumberFormatException n){
+            System.out.println("INDEX ERROR");
+            System.exit(-1);
+        }
+        index = new IndexPair(row, col);
+    }
+    @Override
+    void execute(){
+        IndexPair cell = getCells().get(0);
+        Table table = getTable();
+        try{
+            table.update(cell.getCol(), cell.getRow(), table.getVal(cell).toLowerCase());
+        }catch(IndexOutOfBoundsException e){
+            System.out.println("COL INDEX ERROR");
+            System.exit(-1);
+        } 
+    } 
+}

@@ -4,6 +4,7 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Table {
     //TODO: ERROR HANDLING
     private ArrayList<ArrayList<String>> matrix;
@@ -36,28 +37,28 @@ public class Table {
         }
         
     }
-    public String getVal(Pair pair){
+    public String getVal(IndexPair pair){
         int row = pair.getRow();
         int col = pair.getCol();
        return this.matrix.get(row).get(col); 
     }
 
-    public Action getAction(Pair pair){
+    public TableAction getAction(IndexPair pair){
         String[] values = getVal(pair).split("__");
         switch(values[0]){
             case "sum":
-                return (Action) new sum(this, pair, values[1]);
+                return (TableAction) new Sum(this, pair, values[1]);
             case "avg":
-                return (Action) new avg(this, pair, values[1]);
+                return (TableAction) new Average(this, pair, values[1]);
             case "to_lower":
-                return (Action) new to_lower(this, pair, values[1]);
+                return (TableAction) new ToLower(this, pair, values[1]);
             case "to_upper":
-                return (Action) new to_upper(this, pair, values[1]);
+                return (TableAction) new ToUpper(this, pair, values[1]);
         }
         return null;
     }
 
-    public int isAction(Pair pair){
+    public int isAction(IndexPair pair){
         String action = this.matrix.get(pair.getRow()).get(pair.getCol()).split("__")[0];
         switch(action){
             case "sum":
@@ -140,19 +141,44 @@ public class Table {
                     System.exit(-1);
                 } 
                 String[] colsString = args[cmdIndex+1].split(",");
-                String tableFileString = args[cmdIndex+2];
-                String outFileString = args[cmdIndex+3];
-                
-                //read columns
                 int[] cols = new int[colsString.length];
-                for(int i = 0; i<colsString.length; i++){
-                    try {
-                        cols[i] = Integer.parseInt(colsString[i]);
-                    } catch (Exception e) {
-                        System.out.println("COL INDEX ERROR");
+                boolean isCols = true;
+                int offset = cmdIndex;
+                if(colsString.length == 1){
+                    offset += 1;
+                    isCols = false;
+                }
+                else{
+                    for(int i = 0; i<colsString.length; i++){
+                        try {
+                            cols[i] = Integer.parseInt(colsString[i]);
+                        } catch (Exception e) {
+                            System.out.println("COL INDEX ERROR");
+                        }
+                    }
+                }
+                String tableFileString = args[offset+1];
+                String outFileString = args[offset+2];
+                Table table = new Table(tableFileString, outFileString, header);
+                
+                if(!isCols){
+                    for(int i = 0; i<table.matrix.get(0).size(); i++){
+                        cols[i] = i;
                     }
                 }
 
+                for(int i = 0; i<table.matrix.get(0).size(); i++){
+                    for(int j = 0; j<cols.length; j++){
+                        IndexPair pair = new IndexPair(i, cols[j]);
+                        if(table.isAction(pair) > -1){
+                            TableAction action = table.getAction(pair);
+                            ActionGraph graph = new ActionGraph(action);
+                            graph.eval();
+                            table.update(action.getIndex().getRow(), action.getIndex().getCol(), graph.getResult());
+                        }
+                    }
+                }
+                table.printCols(cols);
                 break;
             }
             case "-when":{
