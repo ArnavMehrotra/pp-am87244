@@ -15,7 +15,7 @@ public class ActionGraph {
         for(int i = 0; i<pairs.size(); i++){
             if(table.isAction(pairs.get(i)) == 1 && table.isAction(action.getIndex()) == 1){
                 TableAction newAction = table.getAction(pairs.get(i));
-                //absurdly inneficient, but easy to debug
+                //horrible
                 for(int j = 0; j<actions.size(); j++){
                     int row_one = actions.get(j).getIndex().getRow();
                     int col_one = actions.get(j).getIndex().getCol();
@@ -24,15 +24,15 @@ public class ActionGraph {
                     if(row_one == new_row && col_one == new_col){
                         System.out.println("DAG ERROR");
                         System.exit(-1);
-                    }
+                   }
                 }
                 action.addDependency(newAction);
                 buildGraph(newAction);
             }
             else if(table.isAction(pairs.get(i)) == 0 && table.isAction(action.getIndex()) == 0){
                 TableAction newAction = table.getAction(pairs.get(i));
-               //absurdly inneficient, but easy to debug
-               for(int j = 0; j<actions.size(); j++){
+                //awful
+               for(int j = 0; j<actions.size(); j++){ 
                     int row_one = actions.get(j).getIndex().getRow();
                     int col_one = actions.get(j).getIndex().getCol();
                     int new_row =  newAction.getIndex().getRow();
