@@ -1,12 +1,9 @@
-import java.lang.reflect.Array;
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class Table {
-    //TODO: ERROR HANDLING
     private ArrayList<ArrayList<String>> matrix;
     private String header;
     private String outFile;
@@ -32,7 +29,7 @@ public class Table {
             }
             tableReader.close();
         } catch(IOException i){
-            //TODO:: handle exception
+            System.out.println("OTHER ERROR");
             System.exit(-1);
         }
         
@@ -45,21 +42,28 @@ public class Table {
 
     public TableAction getAction(IndexPair pair){
         String[] values = getVal(pair).split("__");
-        switch(values[0]){
+        switch(values[1]){
             case "sum":
-                return (TableAction) new Sum(this, pair, values[1]);
+                return (TableAction) new Sum(this, pair, values[2]);
             case "avg":
-                return (TableAction) new Average(this, pair, values[1]);
+                return (TableAction) new Average(this, pair, values[2]);
             case "to_lower":
-                return (TableAction) new ToLower(this, pair, values[1]);
+                return (TableAction) new ToLower(this, pair, values[2]);
             case "to_upper":
-                return (TableAction) new ToUpper(this, pair, values[1]);
+                return (TableAction) new ToUpper(this, pair, values[2]);
         }
         return null;
     }
 
     public int isAction(IndexPair pair){
-        String action = this.matrix.get(pair.getRow()).get(pair.getCol()).split("__")[0];
+        String action = "";
+        try{
+            action = this.matrix.get(pair.getRow()).get(pair.getCol()).split("__")[1];
+        }
+        catch(Exception e){
+            return -1;
+        }
+        
         switch(action){
             case "sum":
             case "avg":
@@ -78,8 +82,7 @@ public class Table {
     private static void launch_args(String[] args){
 
         if(args.length == 0){
-            //TODO: figure out the actual error
-            System.out.println("please provide arguments");
+            System.out.println("OTHER ERROR");
             System.exit(-1);
         }
         boolean header = false;
@@ -91,7 +94,6 @@ public class Table {
         String cmd = args[cmdIndex];
         switch(cmd){
             case "-print":{
-                //TODO: ERROR HANDLING
                 if (args.length - cmdIndex != 4){
                     System.out.println("OTHER ERROR");
                     System.exit(-1);
@@ -114,7 +116,6 @@ public class Table {
                 break;
             }
             case "-sum":{
-                //TODO: ERROR HANDLING
                 if (args.length - cmdIndex != 4){
                     System.out.println("OTHER ERROR");
                     System.exit(-1);
@@ -135,33 +136,39 @@ public class Table {
                 break;
             }
             case "-action":{
-                //TODO: action
-                if (args.length - cmdIndex != 4){
+                if (args.length - cmdIndex < 3){
                     System.out.println("OTHER ERROR");
                     System.exit(-1);
                 } 
-                String[] colsString = args[cmdIndex+1].split(",");
-                int[] cols = new int[colsString.length];
-                boolean isCols = true;
-                int offset = cmdIndex;
-                if(colsString.length == 1){
-                    offset += 1;
-                    isCols = false;
+
+                boolean hasCols = false;
+                if(header && args.length == 5){
+                   hasCols = true; 
                 }
-                else{
+                else if(!header && args.length == 4){
+                    hasCols = true;
+                }
+                 
+                int offset = (hasCols ? 1:0) + cmdIndex;
+                String tableFileString = args[offset+1];
+                String outFileString = args[offset+2];
+                Table table = new Table(tableFileString, outFileString, header);
+                
+                int[] cols;
+                if(hasCols){
+                    String[] colsString = args[cmdIndex+1].split(",");
+                    cols = new int[colsString.length];
                     for(int i = 0; i<colsString.length; i++){
                         try {
                             cols[i] = Integer.parseInt(colsString[i]);
                         } catch (Exception e) {
                             System.out.println("COL INDEX ERROR");
+                            System.exit(-1);
                         }
                     }
                 }
-                String tableFileString = args[offset+1];
-                String outFileString = args[offset+2];
-                Table table = new Table(tableFileString, outFileString, header);
-                
-                if(!isCols){
+                else{
+                    cols = new int[table.matrix.get(0).size()];
                     for(int i = 0; i<table.matrix.get(0).size(); i++){
                         cols[i] = i;
                     }
@@ -174,15 +181,17 @@ public class Table {
                             TableAction action = table.getAction(pair);
                             ActionGraph graph = new ActionGraph(action);
                             graph.eval();
-                            table.update(action.getIndex().getRow(), action.getIndex().getCol(), graph.getResult());
+                            table.update(action.getIndex().getCol(), action.getIndex().getRow(), graph.getResult());
                         }
                     }
                 }
                 table.printCols(cols);
+
                 break;
             }
             case "-when":{
                 //TODO: when
+
                 break;
             }
             case "-update":{
@@ -216,7 +225,6 @@ public class Table {
                 break;
             }
             default:{
-                //TODO: ERROR HANDLING
                 
                 String opFileString = args[0];
                 String tableFileString = args[1];
@@ -232,8 +240,8 @@ public class Table {
                         launch_args(full_cmd.split("\\s+"));
                     }
                 } catch (Exception e) {
-                    //TODO: handle exception
-                    System.out.println("FIGURE OUT WHAT TO PRINT");
+                    System.out.println("OTHER ERROR");
+                    System.exit(-1);
                 }
                 break;
             }
@@ -247,7 +255,7 @@ public class Table {
             if(header != null){
                 printer.println(header);
             }
-            for(int i = 0; i<matrix.get(0).size(); i++){
+            for(int i = 0; i<matrix.size(); i++){
                 for(int j = 0; j<cols.length; j++){
                     printer.print(matrix.get(i).get(cols[j]) + " "); 
                 }
@@ -256,8 +264,7 @@ public class Table {
             printer.flush();
             printer.close();
         } catch(FileNotFoundException f){
-            //TODO: handle exception
-            System.out.println("oopside");
+            System.out.println("OTHER ERROR");
             System.exit(-1);
         } catch(IndexOutOfBoundsException i){
             System.out.println("COL INDEX ERROR");
@@ -272,6 +279,9 @@ public class Table {
                 sum += Float.parseFloat(matrix.get(i).get(col));
             }
             PrintWriter printer = new PrintWriter(outFile);
+            if(header != null){
+                printer.println(header);
+            }
             if(sum %1 == 0){
                 printer.print((int) sum);
                 printer.flush();
@@ -289,7 +299,7 @@ public class Table {
             System.exit(-1);
         }
         catch(FileNotFoundException f){
-            //TODO: handle exception properly
+            System.out.println("OTHER ERROR");
             System.exit(-1);
         }
         return;

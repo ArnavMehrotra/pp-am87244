@@ -8,7 +8,8 @@ will leverage the library.
 
 One of the key inputs to your program is going to be a txt file that
 contains a table.  Keep in mind that the input might not be well
-formatted.  Counting rows and columns in the table starts with 0.
+formatted.  Counting rows and columns in the table starts with 0; if a
+table has a header, that row is ignored when using indexes.
 
 
 ### TABLE FORMAT
@@ -124,7 +125,8 @@ A user can invoke your program with the following options:
       condition) written to the OUT_FILE.
 
       If COND is not well formed, print "COND ERROR".
-      If when cannot be evaluated because of type, then default to "false"
+      If when cannot be evaluated because of type, then default to "false".
+      If COND contains more than one relation operator, evaluate left to right.
 
       Format for COND:
           COND -> REL_COND
@@ -135,8 +137,11 @@ A user can invoke your program with the following options:
           OP -> "<" | ">" | "<>" | "=="
 
       Examples:
-          $1 == "some_string" # every row where column 1 is equal to "some_string"
-          $header_name <> 5 # every row where column with the given header is not equal 5
+          ($1==some_string) # every row where column 1 is equal to "some_string"
+          ($header_name<>5) # every row where column with the given header is not equal 5
+
+      Ignore header during computation, but print the relevant headers
+      to the resulting file.
 
    (e) ./simple [-header] -update ROW,COL,VAL TABLE_FILE OUT_FILE
       -header is optional and says that the input table has a header
@@ -149,14 +154,22 @@ A user can invoke your program with the following options:
 
       If COL or ROW are incorrect, print "INDEX ERROR" to stdout.
 
+      Ignore header during computation, but print the relevant headers
+      to the resulting file.
+
    (f) ./simple OP_FILE TABLE_FILE OUT_FILE
       OP_FILE is a file that contains a sequence (one per line) of commands (a-e), such that each command is applied in sequence
       TABLE_FILE is the path to the input table
       OUT_FILE is the path where you should store the result
 
+      Note: There is only one table input and all commands are
+      executed on the same table in memory.
+
+      Note: We will not use -header here.
+
       Example OP_FILE;
       -action 1 # execute actions in column 1
-      -when $1>55 # only include rows when the first column is greater than 55
+      -when ($1>55) # only include rows when the first column is greater than 55
 
 
 ### ACTIONS
@@ -190,6 +203,22 @@ For all actions, if there are invalid arguments, print the following to stdout:
 
 All actions will be written as strings without spaces, which start
 with "__" and end with "__".
+
+
+### SAMPLE TESTS
+
+We provide some sample tests. See "tests" for all table and output
+files.
+
+./simple -print 0 1.txt 1.out
+
+./simple -header -sum 1 2.txt 2.out
+
+./simple -header -action 1,2 3.txt 3.out
+
+./simple 4.op 4.txt 4.out
+
+./simple -update 3,3,100 5.txt 5.out
 
 
 ### GENERAL

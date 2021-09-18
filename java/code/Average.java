@@ -3,10 +3,17 @@ import java.util.ArrayList;
 public class Average extends TableAction{
     public Average(Table table, IndexPair index, String args){
         super(table, index);
-        String[] pairStrings = args.split("\\[");
+        String fmtArgs = args.replaceAll("\\(", "").replaceAll("\\)", "");
+        String[] pairStrings = fmtArgs.split("\\[");
         for(int i = 0; i<pairStrings.length; i++){
-            String rowString = pairStrings[i].split(",")[0];
-            String colString = pairStrings[i].split(",")[1].replace("\\]", "");
+            String rowString = "";
+            String colString = "";
+            try{
+                rowString = pairStrings[i].split(",")[0];
+                colString = pairStrings[i].split(",")[1].replace("]", "");
+            }catch(Exception e){
+                continue;
+            }
             int row = 0;
             int col = 0;
             try{

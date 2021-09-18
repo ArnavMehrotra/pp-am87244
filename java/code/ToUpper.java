@@ -13,14 +13,15 @@ class ToUpper extends TableAction{
             System.exit(-1);
         }
         index = new IndexPair(row, col);
-        
+        addCell(index);
     }
+
     @Override
     void execute(){
         IndexPair cell = getCells().get(0);
         Table table = getTable();
         try{
-            table.update(cell.getCol(), cell.getRow(), table.getVal(cell).toUpperCase());
+            table.update(getIndex().getCol(), getIndex().getRow(), table.getVal(cell).toUpperCase());
         }catch(IndexOutOfBoundsException e){
             System.out.println("COL INDEX ERROR");
             System.exit(-1);
