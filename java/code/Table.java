@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 public class Table {
     private ArrayList<ArrayList<String>> matrix;
-    private String header;
+    private String[] header;
     private String outFile;
 
     public Table(String tableFileString, String outFile,  boolean header){
@@ -14,7 +14,7 @@ public class Table {
         try{
             BufferedReader tableReader = new BufferedReader(new FileReader(Paths.get(tableFileString).toFile()));
             if(header != false){
-                this.header = tableReader.readLine();
+                this.header = tableReader.readLine().split("\\s");
             }
             String line = tableReader.readLine();
             int j = 0;
@@ -31,6 +31,17 @@ public class Table {
         } catch(IOException i){
             System.out.println("OTHER ERROR");
             System.exit(-1);
+        }
+        
+        if(this.header.length != matrix.get(0).size()){
+            System.out.println("NUM COLS ERROR");
+            System.exit(-1);
+        }
+        for(int i = 0; i<matrix.size(); i++){
+            if(matrix.get(i).size() != matrix.get(0).size()){
+                System.out.println("NUM COLS ERROR");
+                System.exit(-1);
+            }
         }
         
     }
@@ -191,11 +202,15 @@ public class Table {
             }
             case "-when":{
                 //TODO: when
+                
 
                 break;
             }
             case "-update":{
-                //TODO: ERROR HANDLING
+                if(args.length - cmdIndex < 4){
+                   System.out.println("OTHER ERROR");
+                   System.exit(-1); 
+                }
                 String infoString = args[cmdIndex + 1];
                 String tableFileString = args[cmdIndex+2];
                 String outFileString = args[cmdIndex + 3];
@@ -253,7 +268,10 @@ public class Table {
         try{
             PrintWriter printer = new PrintWriter(outFile);
             if(header != null){
-                printer.println(header);
+                for(int i =0; i<cols.length; i++){
+                    printer.print(header[cols[i]] + " ");
+                }
+                printer.print("\n");
             }
             for(int i = 0; i<matrix.size(); i++){
                 for(int j = 0; j<cols.length; j++){
