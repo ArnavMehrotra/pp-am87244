@@ -1,3 +1,4 @@
+//subclass for touppercase action
 class ToUpper extends TableAction{
     public ToUpper(Table table, IndexPair index, String args){
         super(table, index);

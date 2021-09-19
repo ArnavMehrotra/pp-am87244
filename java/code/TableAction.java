@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 
+//abstract class for all actions
+//Each action has it's own execution function and special constructor.
 public abstract class TableAction{
     private Table table;
     private IndexPair index;

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+//subclass for the sum action
 public class Sum extends TableAction{
     public Sum(Table table, IndexPair index, String args){
         super(table, index);

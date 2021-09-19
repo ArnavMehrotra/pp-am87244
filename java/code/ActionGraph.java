@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 
+//Graph made of actions
+//Kinda works, falls apart at any hard example
 public class ActionGraph {
     private ArrayList<TableAction> actions;
     private String result;

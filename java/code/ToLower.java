@@ -1,3 +1,4 @@
+//subclass for tolowercase action
 class ToLower extends TableAction{
     public ToLower(Table table, IndexPair index, String args){
         super(table, index);

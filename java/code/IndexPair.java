@@ -1,3 +1,5 @@
+//helper class for a row col pair
+//kinda unnecessary
 public class IndexPair{
     private int row;
     private int col;

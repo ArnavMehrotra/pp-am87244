@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 
+//subclass for average action
 public class Average extends TableAction{
     public Average(Table table, IndexPair index, String args){
         super(table, index);

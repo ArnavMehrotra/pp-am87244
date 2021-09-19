@@ -2,6 +2,8 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
 public class Table {
     private ArrayList<ArrayList<String>> matrix;
@@ -32,8 +34,8 @@ public class Table {
             System.out.println("OTHER ERROR");
             System.exit(-1);
         }
-        
-        if(this.header.length != matrix.get(0).size()){
+         
+        if(header && this.header.length != matrix.get(0).size()){
             System.out.println("NUM COLS ERROR");
             System.exit(-1);
         }
@@ -184,7 +186,8 @@ public class Table {
                         cols[i] = i;
                     }
                 }
-
+                //build a depency graph and evaluate 
+                //this really doesn't work very well
                 for(int i = 0; i<table.matrix.get(0).size(); i++){
                     for(int j = 0; j<cols.length; j++){
                         IndexPair pair = new IndexPair(i, cols[j]);
@@ -201,9 +204,44 @@ public class Table {
                 break;
             }
             case "-when":{
-                //TODO: when
-                
+                //Remember when you this assignment wasn't to test our lexing and parsing skills?
+                //I'm preeeety sure that's all this part is.
+                //What do I know, though, I couldn't do it correctly.
+                if (args.length - cmdIndex != 4){
+                    System.out.println("OTHER ERROR");
+                    System.exit(-1);
+                }
+                String condString = args[cmdIndex+1];
+                String tableFileString = args[cmdIndex+2];
+                String outFileString = args[cmdIndex+3];
 
+                //JS hack to cover simple cases, no clue how to parse hard ones
+                //make an AST? Use Stacks?
+                ScriptEngineManager mgr = new ScriptEngineManager();
+                ScriptEngine engine = mgr.getEngineByName("JavaScript");
+                condString = condString.replaceAll("\\<\\>", "!=");
+                Table table = new Table(tableFileString, outFileString, header);
+                ArrayList<Integer> rows = new ArrayList<>();
+                for(int i = 0; i<table.matrix.size(); i++){
+                    for(int j = 0; j<table.matrix.get(0).size(); j++){
+                        if(!(condString.contains("$" + j) || condString.contains("$" + table.header[j]))){
+                            continue;
+                        }
+                        String tempString = condString.replaceAll("\\$" + j, table.matrix.get(i).get(j));
+                        tempString = tempString.replaceAll("\\$"+table.header[j], table.matrix.get(i).get(j));
+                        boolean success = false;
+                        try{
+                            success = (boolean) engine.eval(tempString);
+                        } catch(Exception e){
+                           System.out.println("COND ERROR");
+                           System.exit(-1);
+                        }
+                        if(success){
+                            rows.add(i);
+                        }
+                    }
+                }
+                table.printRows(rows);
                 break;
             }
             case "-update":{
@@ -227,10 +265,12 @@ public class Table {
                     System.out.println("INDEX ERROR");
                     System.exit(-1);
                 }
-
+                
+                //read table and update value
                 Table table = new Table(tableFileString, outFileString, header);
                 table.update(col, row, val);
-
+                
+                //print all columns
                 int[] cols = new int[table.matrix.get(0).size()];
                 for(int i = 0; i<cols.length; i++){
                     cols[i] = i;
@@ -262,6 +302,29 @@ public class Table {
             }
         }
 
+    }
+
+    public void printRows(ArrayList<Integer> rows){
+        try{
+            PrintWriter printer = new PrintWriter(outFile);
+            if(header != null){
+                for(int i = 0; i<header.length; i++){
+                    printer.print(header[i] + " ");
+                }
+                printer.print("\n");
+            }
+            for(int i = 0; i< rows.size(); i++){
+                for(int j = 0; j<matrix.get(0).size(); j++){
+                    printer.print(matrix.get(rows.get(i)).get(j) + " ");
+                }
+                printer.print("\n");
+            }
+            printer.flush();
+            printer.close();
+        }catch(FileNotFoundException f){
+            System.out.println("OTHER ERROR");
+        }
+        
     }
 
     public void printCols(int[] cols){
@@ -298,7 +361,7 @@ public class Table {
             }
             PrintWriter printer = new PrintWriter(outFile);
             if(header != null){
-                printer.println(header);
+                printer.println(header[col]);
             }
             if(sum %1 == 0){
                 printer.print((int) sum);
