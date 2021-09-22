@@ -64,7 +64,9 @@ int main(int argc, char** argv){
 }
 
 //builds a table
-Table* build_table(int header, char* table_file_string, char* out_file_string){
+Table* build_table(int header, char* table_file_string, char* out_file_string){	
+	Table* table = calloc(1, sizeof(Table));
+
 	FILE* table_file = fopen(table_file_string, "r");
 	
 	if(!table_file){
@@ -72,11 +74,18 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 		exit(-1);	
 	}
 
-	Table* table = calloc(1, sizeof(Table));
+	fseek(table_file, 0, SEEK_END);
+	long file_length = ftell(table_file);
+	fseek(table_file, 0, SEEK_SET);
+	char* file_buffer = malloc(file_length);
 
-	char* line = NULL;
-	ssize_t linelen;
-	size_t line_cap = 0;
+	if(!file_buffer){
+		printf("OTHER ERROR");
+		exit(-1);
+	}
+
+	fread(file_buffer, 1, file_length, table_file);
+	fclose(table_file);
 
 	int r = 0;
 	int c = 0;
@@ -89,9 +98,11 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 		}
 	}
 
+	char* line = strtok(file_buffer, "\n");
+
 	//read file into buff and determine size for calloc
-	while((linelen = getline(&line, &line_cap, table_file)) != -1){
-		char* tokens = strtok(line, " \n\t");	
+	while(line != NULL){
+		char* tokens = strtok(line, " \t");	
 		int last_c = c;
 		c = 0;	
 		while(tokens != NULL){
@@ -103,9 +114,9 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 			printf("NUM COLS ERROR\n");
 			exit(-1);
 		}
+		line = strtok(NULL, "\n");
 		r++;
 	}
-	fclose(table_file);
 			
 	table->values = calloc(r-header, sizeof(Table_Entry*));
 
