@@ -1,4 +1,4 @@
-A B C
+len width height
 1 3 5
 2 4 7
 22 30 50

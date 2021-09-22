@@ -9,7 +9,8 @@
 
 Table* build_table(int header, char* table_file_string, char* out_file_string);
 void free_table(Table* table);
-int sum_col(int col, Table* table);
+void sum_col(int col, Table* table);
+void print_cols(Table* table, int cols[], int n_cols);
 
 int main(int argc, char** argv){
 	int header = false;
@@ -18,36 +19,56 @@ int main(int argc, char** argv){
 	}
 	
 	int cmd_index = header ? 2 : 1;
-	if(!(strcmp(argv[cmd_index], "-sum"))){
+	if(!(strcmp(argv[cmd_index], "-print"))){
+		if((argv[1+cmd_index] == NULL) || (argv[2+cmd_index] == NULL) || (argv[3+cmd_index] == NULL)){
+			printf("OTHER ERROR\n");
+			exit(-1);
+		}
+		int cols[256];
+		int col_nums = 0;
+		char* col_string = strtok(argv[1+cmd_index], ",");
+		while(col_string != NULL){
+			int col = atoi(col_string);
+			if(!col && strcmp(col_string, "0")){
+				printf("COL INDEX ERROR\n");
+				exit(-1);
+			}
+			cols[col_nums] = col;
+			col_string = strtok(NULL, ",");
+			col_nums++;
+		}
+		Table* table = build_table(header, argv[2+cmd_index], argv[3+cmd_index]);
+		print_cols(table, cols, col_nums);	
+		free_table(table);
+
+	}
+	else if(!(strcmp(argv[cmd_index], "-sum"))){
 		if((argv[1+cmd_index] == NULL) || (argv[2+cmd_index] == NULL) || (argv[3+cmd_index] == NULL)){
 			printf("OTHER ERROR\n");
 			exit(-1);
 		}
 
-		Table* table = build_table(header, argv[2+cmd_index], argv[3+cmd_index]);
-		if(header){
-			for(int i = 0; i<table->num_cols; i++){
-				printf("%s ", table->header[i]);
-			}
-			printf("\n");
-		}
 		int col = atoi(argv[1+cmd_index]);
 		if(col == 0 && strcmp(argv[1+cmd_index], "0")){
 			printf("COL INDEX ERROR\n");
 			exit(-1);
 		}
-		int sum = sum_col(col, table);
+
+		Table* table = build_table(header, argv[2+cmd_index], argv[3+cmd_index]);
+		sum_col(col, table);
 		free_table(table);
 	}
+	
 
     return 0;
 }
 
+//builds a table
 Table* build_table(int header, char* table_file_string, char* out_file_string){
 	FILE* table_file = fopen(table_file_string, "r");
 	
 	if(!table_file){
-		printf("OTHER ERROR");
+		printf("OTHER ERROR\n");
 		exit(-1);	
 	}
 
@@ -79,12 +100,12 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 			c++; //hehe
 		}
 		if((c != last_c)&&(last_c != 0)){
-			printf("NUM COLS ERROR");
+			printf("NUM COLS ERROR\n");
 			exit(-1);
 		}
 		r++;
 	}
-
+	fclose(table_file);
 			
 	table->values = calloc(r-header, sizeof(Table_Entry*));
 
@@ -127,12 +148,13 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 	return table;	
 }
 
-int sum_col(int col, Table* table){
+//sum values in a column
+void sum_col(int col, Table* table){
 	if(col >= table->num_cols || col < 0){
 		printf("COL INDEX ERROR\n");
 		exit(-1);
 	}
-	int sum = 0;
+	double sum = 0;
 	for(int i = 0; i<table->num_rows; i++){
 		if(table->values[i][col].type == STR){
 			printf("TYPE ERROR\n");
@@ -140,9 +162,68 @@ int sum_col(int col, Table* table){
 		}
 		sum += table->values[i][col].val.num;
 	}
-	return sum;
+
+	//print sum to file
+	FILE* outfile = fopen(table->outfile, "w");
+
+	if(outfile == NULL){
+		printf("OTHER ERROR\n");
+	}
+	if(table->header != NULL){
+		fprintf(outfile, "%s\n", table->header[col]);
+	}
+	if(!(sum-(int)sum)){
+		fprintf(outfile, "%d", (int)sum);
+	}
+	else{
+		fprintf(outfile, "%.5g", sum);
+	}
+	fclose(outfile);
 }
 
+
+void print_cols(Table* table, int cols[], int n_cols){
+	//open file
+	FILE* outfile = fopen(table->outfile, "w");
+
+	if(outfile == NULL){
+		printf("OTHER ERROR\n");
+	}
+	
+	//print header if there is one
+	if(table->header != NULL){
+		for(int i = 0; i<n_cols; i++){
+			fprintf(outfile, "%s ", table->header[cols[i]]);
+		}
+		fprintf(outfile, "\n");
+	}	
+
+	//print cols
+	for(int i = 0; i<table->num_rows; i++){
+		for(int j=0; j<n_cols; j++){
+			if(cols[j] >= table->num_cols || cols[j] < 0){
+				printf("COL INDEX ERROR\n");
+				exit(-1);
+			}
+			if(table->values[i][cols[j]].type == NUM){
+				if(table->values[i][cols[j]].val.num - (int)table->values[i][cols[j]].val.num == 0){
+					fprintf(outfile, "%d ", (int)table->values[i][cols[j]].val.num);
+				}
+				else{
+					fprintf(outfile, "%.5g ", table->values[i][cols[j]].val.num);
+				}
+			}
+			else{
+				fprintf(outfile, "%s ", table->values[i][cols[j]].val.str);
+			}
+		}
+		fprintf(outfile, "\n");
+	}
+
+	fclose(outfile);	
+}
+
+//frees all memory allocated in table struct
 void free_table(Table* table){
 	if(table->header != NULL){
 		for(int i = 0; i<table->num_cols; i++){
