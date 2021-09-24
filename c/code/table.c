@@ -58,6 +58,18 @@ int main(int argc, char** argv){
 		sum_col(col, table);
 		free_table(table);
 	}
+	else if(!(strcmp(argv[cmd_index], "-when"))){
+		if((argv[1+cmd_index] == NULL) || (argv[2+cmd_index] == NULL) || (argv[3+cmd_index] == NULL)){
+			printf("OTHER ERROR\n");
+			exit(-1);
+		}
+
+
+	}
+	else{
+		printf("OTHER ERROR");
+		exit(-1);
+	}
 	
 
     return 0;
@@ -98,6 +110,8 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 		r++;
 		line_helper = strtok(NULL, "\n");
 	}
+
+	free(file_buffer);
 
 	int c = 0;
 	for(int i = 0; i<r; i++){
