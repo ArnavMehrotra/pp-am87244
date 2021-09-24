@@ -1,5 +1,5 @@
 #!/bin/bash
 
 # you can put any lines here to run your program for the given input.
-gcc table.c
+gcc table.c -std=c11
 ./a.out $@

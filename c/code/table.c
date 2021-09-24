@@ -80,78 +80,69 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 	char* file_buffer = malloc(file_length);
 
 	if(!file_buffer){
-		printf("OTHER ERROR");
+		printf("OTHER ERROR\n");
 		exit(-1);
 	}
-
 	fread(file_buffer, 1, file_length, table_file);
 	fclose(table_file);
-
-	int r = 0;
-	int c = 0;
-	char* buff[256][256];
+	file_buffer[file_length-1] = '\0';
+	printf("%s", file_buffer);
+	char* buff[256][256];	
 
 	//make space for buffer strings
-	for(int i = 0; i<256; i++){
-		for(int j = 0; j<256; j++){
-			buff[i][j] = calloc(32, sizeof(char));
-		}
+	char* line_buff[256];
+	int r = 0;
+	char* help = strtok(file_buffer, "\n");
+	while(help != NULL){
+		line_buff[r] = help;
+		printf("%s\n", help);
+		r++;
+		help = strtok(NULL, "\n");
 	}
 
-	char* line = strtok(file_buffer, "\n");
-
-	//read file into buff and determine size for calloc
-	while(line != NULL){
-		char* tokens = strtok(line, " \t");	
+	int c = 0;
+	for(int i = 0; i<r; i++){
+		char* tok = strtok(line_buff[i], " \t");
 		int last_c = c;
-		c = 0;	
-		while(tokens != NULL){
-			strcpy(buff[r][c], tokens);
-			tokens = strtok(NULL, " \n\t");
-			c++; //hehe
+		c = 0;
+		while(tok != NULL){
+			buff[i][c] = tok;
+			tok = strtok(NULL, " \t");
+			c++;
 		}
-		if((c != last_c)&&(last_c != 0)){
+		if((c != last_c) && (last_c != 0)){
 			printf("NUM COLS ERROR\n");
 			exit(-1);
 		}
-		line = strtok(NULL, "\n");
-		r++;
 	}
 			
 	table->values = calloc(r-header, sizeof(Table_Entry*));
-
 	//read header if there is one
 	if(header){
-		table->header = calloc(r, sizeof(char*));
+		table->header = calloc(c, sizeof(char*));
 		for(int i = 0; i<c; i++){
 			table->header[i] = calloc(strlen(buff[0][i])+1, sizeof(char));
 			strcpy(table->header[i], buff[0][i]);
 		}
 	}
-
+	
 	//copy buffer into table
 	for(int i = 0; i<r - header; i++){
 		table->values[i] = calloc(c, sizeof(Table_Entry));	
 		for(int j = 0; j<c; j++){
-			if((atof(buff[i+header][j]) == 0) && (strcmp(buff[i+header][j], "0"))){
+			if((atoi(buff[i+header][j]) == 0) && (strcmp(buff[i+header][j], "0"))){
 				table->values[i][j].type = STR;
 				table->values[i][j].val.str = calloc(strlen(buff[i+header][j])+1, sizeof(char));
 				strcpy(table->values[i][j].val.str, buff[i+header][j]);	
+				printf("str: %s\n", buff[i+header][j]);
 			}
 			else{
 				table->values[i][j].type = NUM;
 				table->values[i][j].val.num = atof(buff[i+header][j]);
+				printf("num: %.5g\n", table->values[i][j].val.num);
 			}
 		}
 	}
-
-	//free buffer strings
-	for(int i = 0; i<256; i++){
-		for(int j = 0; j<256; j++){
-			free(buff[i][j]);
-		}
-	}
-
 	
 	table->num_cols = c;
 	table->num_rows = r-header;
