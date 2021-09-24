@@ -86,18 +86,17 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 	fread(file_buffer, 1, file_length, table_file);
 	fclose(table_file);
 	file_buffer[file_length-1] = '\0';
-	printf("%s", file_buffer);
+
 	char* buff[256][256];	
 
 	//make space for buffer strings
 	char* line_buff[256];
 	int r = 0;
-	char* help = strtok(file_buffer, "\n");
-	while(help != NULL){
-		line_buff[r] = help;
-		printf("%s\n", help);
+	char* line_helper = strtok(file_buffer, "\n");
+	while(line_helper != NULL){
+		line_buff[r] = line_helper;
 		r++;
-		help = strtok(NULL, "\n");
+		line_helper = strtok(NULL, "\n");
 	}
 
 	int c = 0;
@@ -134,12 +133,10 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 				table->values[i][j].type = STR;
 				table->values[i][j].val.str = calloc(strlen(buff[i+header][j])+1, sizeof(char));
 				strcpy(table->values[i][j].val.str, buff[i+header][j]);	
-				printf("str: %s\n", buff[i+header][j]);
 			}
 			else{
 				table->values[i][j].type = NUM;
 				table->values[i][j].val.num = atof(buff[i+header][j]);
-				printf("num: %.5g\n", table->values[i][j].val.num);
 			}
 		}
 	}
@@ -191,7 +188,14 @@ void print_cols(Table* table, int cols[], int n_cols){
 	if(outfile == NULL){
 		printf("OTHER ERROR\n");
 	}
-	
+
+	for(int j = 0; j<n_cols; j++){
+		if((cols[j] >= table->num_cols) || cols[j] < 0){
+			printf("COL INDEX ERROR\n");
+			exit(-1);
+		}
+	}
+
 	//print header if there is one
 	if(table->header != NULL){
 		for(int i = 0; i<n_cols; i++){
@@ -203,10 +207,6 @@ void print_cols(Table* table, int cols[], int n_cols){
 	//print cols
 	for(int i = 0; i<table->num_rows; i++){
 		for(int j=0; j<n_cols; j++){
-			if(cols[j] >= table->num_cols || cols[j] < 0){
-				printf("COL INDEX ERROR\n");
-				exit(-1);
-			}
 			if(table->values[i][cols[j]].type == NUM){
 				if(table->values[i][cols[j]].val.num - (int)table->values[i][cols[j]].val.num == 0){
 					fprintf(outfile, "%d ", (int)table->values[i][cols[j]].val.num);
