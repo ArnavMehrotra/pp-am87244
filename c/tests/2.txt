@@ -1,4 +1,4 @@
 len width height
 1 3 5
-1 adpoj 7
+1 2 7
 22 30 50

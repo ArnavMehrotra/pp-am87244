@@ -111,7 +111,6 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 		line_helper = strtok(NULL, "\n");
 	}
 
-	free(file_buffer);
 
 	int c = 0;
 	for(int i = 0; i<r; i++){
@@ -158,6 +157,7 @@ Table* build_table(int header, char* table_file_string, char* out_file_string){
 	table->num_cols = c;
 	table->num_rows = r-header;
 	table->outfile = out_file_string;
+	free(file_buffer);
 	return table;	
 }
 
