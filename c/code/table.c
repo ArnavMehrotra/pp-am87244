@@ -11,14 +11,17 @@ Table* build_table(int header, char* table_file_string, char* out_file_string);
 void free_table(Table* table);
 void sum_col(int col, Table* table);
 void print_cols(Table* table, int cols[], int n_cols);
+void print_when(Table* table, char* cond, int operation);
 
 int main(int argc, char** argv){
+	//check for header
 	int header = false;
     if(!(strcmp(argv[1], "-header"))){
 		header = true;
 	}
-	
+		
 	int cmd_index = header ? 2 : 1;
+	//if else ladder for the command
 	if(!(strcmp(argv[cmd_index], "-print"))){
 		if((argv[1+cmd_index] == NULL) || (argv[2+cmd_index] == NULL) || (argv[3+cmd_index] == NULL)){
 			printf("OTHER ERROR\n");
@@ -59,15 +62,46 @@ int main(int argc, char** argv){
 		free_table(table);
 	}
 	else if(!(strcmp(argv[cmd_index], "-when"))){
+		//check for args
 		if((argv[1+cmd_index] == NULL) || (argv[2+cmd_index] == NULL) || (argv[3+cmd_index] == NULL)){
 			printf("OTHER ERROR\n");
 			exit(-1);
 		}
 
+		//make table and eval operator
+		Table* table = build_table(header, argv[2+cmd_index], argv[3+cmd_index]);
+		char* cond = argv[1+cmd_index];
+		switch(cond[0]){
+			case '<':{
+				if(cond[1] == '>'){
+					print_when(table, cond+2, NEQ);
+				}
+				else{
+					print_when(table, cond+1, LT);
+				}
+				break;
+			}
+			case '>':{
+				print_when(table, cond+1, GT);
+				break;
+			}
+			case '=':{
+				if(cond[1] != '='){
+					printf("COND ERROR\n");
+					exit(-1);
+				}
+				print_when(table, cond+2, EQ);
+				break;
+			}
+			default:
+				printf("COND ERROR\n");	
+				exit(-1);
+		}
 
 	}
 	else{
-		printf("OTHER ERROR");
+		//error if invalid command is input
+		printf("OTHER ERROR\n");
 		exit(-1);
 	}
 	
@@ -185,12 +219,7 @@ void sum_col(int col, Table* table){
 	if(table->header != NULL){
 		fprintf(outfile, "%s\n", table->header[col]);
 	}
-	if(!(sum-(int)sum)){
-		fprintf(outfile, "%d", (int)sum);
-	}
-	else{
-		fprintf(outfile, "%.5g", sum);
-	}
+	fprintf(outfile, "%.5g\n", sum);
 	fclose(outfile);
 }
 
@@ -222,12 +251,7 @@ void print_cols(Table* table, int cols[], int n_cols){
 	for(int i = 0; i<table->num_rows; i++){
 		for(int j=0; j<n_cols; j++){
 			if(table->values[i][cols[j]].type == NUM){
-				if(table->values[i][cols[j]].val.num - (int)table->values[i][cols[j]].val.num == 0){
-					fprintf(outfile, "%d ", (int)table->values[i][cols[j]].val.num);
-				}
-				else{
-					fprintf(outfile, "%.5g ", table->values[i][cols[j]].val.num);
-				}
+				fprintf(outfile, "%.5g ", table->values[i][cols[j]].val.num);
 			}
 			else{
 				fprintf(outfile, "%s ", table->values[i][cols[j]].val.str);
@@ -238,6 +262,455 @@ void print_cols(Table* table, int cols[], int n_cols){
 
 	fclose(outfile);	
 }
+
+void print_rows(Table* table, int n_rows, int rows[]){
+	FILE* outfile = fopen(table->outfile, "w");
+
+	if(outfile == NULL){
+		printf("OTHER ERROR\n");
+		exit(-1);
+	}
+
+	if(table->header != NULL){
+		for(int i = 0; i<table->num_cols; i++){
+			fprintf(outfile, "%s ", table->header[i]);
+		}
+		fprintf(outfile, "\n");
+	}
+
+	for(int i = 0; i<n_rows; i++){
+		for(int j = 0; j<table->num_cols; j++){
+			if(table->values[rows[i]][j].type == NUM){
+				fprintf(outfile, "%.5g ", table->values[rows[i]][j].val.num);
+			}
+			else{
+				fprintf(outfile, "%s ", table->values[rows[i]][j].val.str);
+			}
+		}
+		fprintf(outfile, "\n");	
+	}
+	fclose(outfile);
+}
+
+//print with condition
+void print_when(Table* table, char* cond, int operation){
+	char* op1 = strtok(cond, ",");
+	char* op2 = strtok(NULL, ",");
+	if(!op1 || !op2){
+		printf("COND ERROR\n");
+		exit(-1);
+	}
+	
+    int n_rows = 0;
+	int rows[table->num_rows];
+
+	int op1_type;
+	int col1;
+	double op1_num;
+
+	int op2_type;
+	int col2;
+	double op2_num;
+
+	//form values from cond statement
+	if(op1[0] == '$'){
+		op1_type = COL;
+		col1 = atoi(op1 + 1);
+		if((col1 == 0) && (op1[1] != '0')){
+			printf("COND ERROR\n");
+			exit(-1);
+		}
+		else if(col1 >= table->num_cols || col1 < 0){
+			printf("COND ERROR\n");
+			exit(-1);
+		}
+	}
+	else if(op1[0] == '@'){
+		op1_type = COL;
+		op1 = op1 + 1;		
+		if(table->header == NULL){
+			printf("COND ERROR\n");
+			exit(-1);
+		}
+		for(int i = 0; i < table->num_cols; i++){
+			if(strcmp(op1, table->header[i]) == 0){
+				col1 = i;
+				goto FOUNDCOL1;
+			}
+		}
+		printf("COND ERROR\n");
+		exit(-1);	
+	}
+	else{
+		op1_num = atof(op1);
+		if(((int) op1_num == 0) && op1[0] != '0'){
+			op1_type = CONSTSTR;
+		}
+		else{
+			op1_type = CONSTNUM;
+		}
+	}
+	FOUNDCOL1:
+
+
+	if(op2[0] == '$'){
+		op2_type = COL;
+		col2 = atoi(op2 + 1);
+		if((col2 == 0) && (op2[1] != '0')){
+			printf("COND ERROR\n");
+			exit(-1);
+		}
+		else if(col2 >= table->num_cols || col2 < 0){
+			printf("COND ERROR\n");
+			exit(-1);
+		}
+	}
+	else if(op2[0] == '@'){
+		op2_type = COL;
+		op2 = op2 + 1;		
+		if(table->header == NULL){
+			printf("COND ERROR\n");
+			exit(-1);
+		}
+		for(int i = 0; i < table->num_cols; i++){
+			if(strcmp(op2, table->header[i]) == 0){
+				col2 = i;
+				goto FOUNDCOL2;
+			}
+		}
+		printf("COND ERROR\n");
+		exit(-1);	
+	}
+	else{
+		op2_num = atof(op2);
+		if(((int) op2_num == 0) && op1[0] != '0'){
+			op2_type = CONSTSTR;
+		}
+		else{
+			op2_type = CONSTNUM;
+		}
+	}
+	FOUNDCOL2:
+
+
+	//execute commands in this big ugly switch statement
+	switch(op1_type){
+		case COL:{
+			switch(op2_type){
+				case COL:{
+					for(int i = 0; i<table->num_rows; i++){
+						switch(operation){
+							case GT:{
+								if(table->values[i][col1].type != table->values[i][col2].type){
+									continue;
+								}
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num > table->values[i][col2].val.num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								else if((table->values[i][col1].type == STR) && strcmp(table->values[i][col1].val.str, table->values[i][col2].val.str) > 0){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case LT:{
+								if(table->values[i][col1].type != table->values[i][col2].type){
+									continue;
+								}
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num < table->values[i][col2].val.num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								else if((table->values[i][col1].type == STR) && strcmp(table->values[i][col1].val.str, table->values[i][col2].val.str) < 0){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case NEQ:{
+								if(table->values[i][col1].type != table->values[i][col2].type){
+									continue;
+								}
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num != table->values[i][col2].val.num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								else if((table->values[i][col1].type == STR) && strcmp(table->values[i][col1].val.str, table->values[i][col2].val.str) != 0){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							default:{
+								if(table->values[i][col1].type != table->values[i][col2].type){
+									continue;
+								}
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num == table->values[i][col2].val.num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								else if((table->values[i][col1].type == STR) && strcmp(table->values[i][col1].val.str, table->values[i][col2].val.str) == 0){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+						}
+					}
+					break;
+				}
+				case CONSTNUM:{
+					for(int i = 0; i<table->num_rows; i++){
+						switch(operation){
+							case GT:{
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num > op2_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case LT:{
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num < op2_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case NEQ:{
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num != op2_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							default:{
+								if((table->values[i][col1].type == NUM) && (table->values[i][col1].val.num == op2_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+						}
+					}
+					break;
+				}
+				case CONSTSTR:{
+					for(int i = 0; i<table->num_cols; i++){
+						switch(operation){
+							case GT:{
+								if((table->values[i][col1].type == STR) && (strcmp(table->values[i][col1].val.str, op2) > 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case LT:{
+								if((table->values[i][col1].type == STR) && (strcmp(table->values[i][col1].val.str, op2) < 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case NEQ:{
+								if((table->values[i][col1].type == STR) && (strcmp(table->values[i][col1].val.str, op2) != 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							default:{
+								if((table->values[i][col1].type == STR) && (strcmp(table->values[i][col1].val.str, op2) == 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+						}
+					}
+					break;
+				}
+			}
+			break;
+		}
+		case CONSTNUM:{
+			switch(op2_type){
+				case COL:{
+					for(int i = 0; i<table->num_rows; i++){
+						switch(operation){
+							case GT:{
+								if((table->values[i][col2].type == NUM) && (table->values[i][col2].val.num < op1_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case LT:{
+								if((table->values[i][col2].type == NUM) && (table->values[i][col2].val.num > op1_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case NEQ:{
+								if((table->values[i][col2].type == NUM) && (table->values[i][col2].val.num != op1_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							default:{
+								if((table->values[i][col2].type == NUM) && (table->values[i][col2].val.num == op1_num)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+						}
+					}
+					break;
+				}
+				case CONSTNUM:{
+					switch(operation){
+						case GT:{
+							if(op1_num > op2_num){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+						case LT:{
+							if(op1_num < op2_num){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+						case NEQ:{
+							if(op1_num != op2_num){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+						default:{
+							if(op1_num == op2_num){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+					}
+					break;
+				}
+				default:
+					break;
+			}
+			break;
+		}
+		case CONSTSTR:{
+			switch(op2_type){
+				case COL:{
+					for(int i = 0; i<table->num_cols; i++){
+						switch(operation){
+							case GT:{
+								if((table->values[i][col2].type == STR) && (strcmp(table->values[i][col2].val.str, op1) < 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case LT:{
+								if((table->values[i][col2].type == STR) && (strcmp(table->values[i][col2].val.str, op1) > 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							case NEQ:{
+								if((table->values[i][col2].type == STR) && (strcmp(table->values[i][col2].val.str, op1) != 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+							default:{
+								if((table->values[i][col2].type == STR) && (strcmp(table->values[i][col2].val.str, op1) == 0)){
+									rows[n_rows] = i;
+									n_rows++;
+								}
+								break;
+							}
+						}
+					}
+					break;
+				}
+				case CONSTSTR:{
+					switch(operation){
+						case GT:{
+							if(strcmp(op1, op2) > 0){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+						case LT:{
+							if(strcmp(op1, op2) < 0){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+						case NEQ:{
+							if(strcmp(op1, op2) != 0){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+						default:{
+							if(strcmp(op1, op2) == 0){
+								for(int i = 0; i<table->num_rows; i++){
+									rows[i] = i;
+								}
+								n_rows = table->num_rows;
+							}
+							break;
+						}
+					}
+					break;
+				}
+				default:{
+					break;
+				}
+			}	
+			break;
+		}
+		default:{
+			printf("COND ERROR\n");
+			break;
+		}
+
+	}
+	print_rows(table, n_rows, rows);
+}
+
+
+
 
 //frees all memory allocated in table struct
 void free_table(Table* table){
