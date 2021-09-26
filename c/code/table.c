@@ -97,6 +97,7 @@ int main(int argc, char** argv){
 				printf("COND ERROR\n");	
 				exit(-1);
 		}
+		free_table(table);
 
 	}
 	else{

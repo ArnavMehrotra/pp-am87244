@@ -34,3 +34,9 @@ typedef struct _table{
     char** header;
     Table_Entry** values;
 }Table;
+
+Table* build_table(int header, char* table_file_string, char* out_file_string);
+void free_table(Table* table);
+void sum_col(int col, Table* table);
+void print_cols(Table* table, int cols[], int n_cols);
+void print_when(Table* table, char* cond, int operation);
