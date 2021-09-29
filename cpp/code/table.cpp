@@ -7,8 +7,19 @@
 
 typedef std::string String;
 
-class TableEntry{
+typedef enum TYPE{
+    STR,
+    NUM
+}_type;
 
+typedef union _value{
+    char* str;
+    double num;
+}Value;
+
+class TableEntry{
+    TYPE type;
+    Value val;
 };
 
 class Table{
@@ -25,13 +36,16 @@ class Table{
         std::ifstream t(tableFile);
         String fileString;
         std::getline(t, fileString);
-        std::cout << fileString << "\n";
+        while(!fileString.empty()){
+            std::cout << fileString << "\n";
+            std::getline(t, fileString);
+        }
     }
 
 };
 
 int main(int argc, char* argv[]){
-    if(argc < 4){
+    if(argc < 5){
         std::cout << "OTHER ERROR\n";
         exit(-1);
     }
