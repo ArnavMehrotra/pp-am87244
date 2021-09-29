@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ typedef enum TYPE{
 }_type;
 
 typedef union _value{
-    string str;
+    string* str;
     double num;
 }Value;
 
@@ -21,100 +22,107 @@ class TableEntry{
     public:
         TYPE type;
         Value val;
+        TableEntry(const char* valString){
+            if((atoi(valString) == 0) && (valString[0] != '0')){
+                        type = STR;
+                        val.str = new string(valString);
+                    }
+                    else{
+                        type = NUM;
+                        val.num = atof(valString);
+            }
+        }
+        ~TableEntry(){
+            if(type == STR){
+                delete val.str;
+            }
+        }
 };
 
 class Table{
     private:
-        TableEntry** values;
+        vector<vector<TableEntry> > values;
         string outFile;
         int rows;
         int cols;
-        string* header;
+        vector<string> header;
     public:
         Table(string tableFile, string out, bool head){
             outFile = out;
-            string buffer[256][256];
-
             ifstream t(tableFile);
             string fileString;
             getline(t, fileString);
             int r = 0;
             int c = 0;
 
+            if(head){
+                char* tok = strtok((char*) fileString.c_str(), " \t");
+                while(tok){
+                    header.push_back(tok);
+                    cout << tok << "\n";
+                    tok = strtok(NULL, " \t");
+                    c++;
+                }
+            }
+
+            getline(t, fileString);
             //read file into buffer
             while(!fileString.empty()){
+                vector<TableEntry> val_buff;
                 stringstream ss(fileString);
                 string val;
                 int last_c = c;
                 c = 0;
                 while(ss >> val){
-                    buffer[r][c] = val; 
+                    val_buff.push_back(TableEntry(val.c_str())); 
                     c++; //oops I did it again 
                 }
                 if((last_c != c) && (last_c != 0)){
                     cout << "NUM COLS ERROR\n";
                     exit(-1);
                 }
+                values.push_back(val_buff);
                 getline(t, fileString);
                 r++;
             }
 
-            if(head){
-                header = (string*) calloc(c, sizeof(string));
-                for(int i = 0; i<c; i++){
-                    header[i] = buffer[0][i];
-                }
-            }
-        
-            values = (TableEntry**) calloc(r, sizeof(TableEntry*));
-            for(int i = 0; i<r; i++){
-                values[i] = (TableEntry*)calloc(c, sizeof(TableEntry));
-            }
-
-            for(int i=0; i<r-head; i++){
-                for(int j=0; j<c; j++){
-                    if((atoi(buffer[i+head][j].c_str()) == 0) && (buffer[i+head][j].c_str()[0] != '0')){
-                        values[i][j].type = STR;
-                        values[i][j].val.str = buffer[i+head][j];
-                    }
-                    else{
-                        values[i][j].type = NUM;
-                        values[i][j].val.num = atof(buffer[i+head][j].c_str());
-                    }
-                }
-            }
-
-            rows = r-head;
+            rows = r;
             cols = c;
         }
 
-        void printCols(int n_cols, int printCols[]){
-            for(int i = 0; i<n_cols; i++){
+        void printCols(vector<int> printCols){
+            FILE* out = fopen(outFile.c_str(), "w");
+
+            if(!out){
+                cout << "OTHER ERROR\n";
+            }
+
+            for(int i = 0; i<printCols.size(); i++){
                 if((printCols[i] >= cols) || printCols[i] < 0){
                     cout << "COL INDEX ERROR\n";
                 }
             }
 
-            if(header != NULL){
-                for(int i = 0; i<n_cols; i++){
-                    cout << header[i] << " ";
+            if(!header.empty()){
+                for(int i = 0; i<printCols.size(); i++){
+                    fprintf(out, "%s ",header[printCols[i]].c_str());
                 }
-                cout << "\n";
+                fprintf(out, "\n");
             }
 
             for(int i = 0; i<rows; i++){
-                for(int j = 0; j<n_cols; j++){
+                for(int j = 0; j<printCols.size(); j++){
                     if(values[i][printCols[j]].type == NUM){
-                        printf("%.5g ",values[i][printCols[j]].val.num);
+                        fprintf(out, "%.5g ",values[i][printCols[j]].val.num);
                     }
                     else{
-                        cout << values[i][printCols[j]].val.str << " ";
+                        fprintf(out, "%s ", values[i][printCols[j]].val.str->c_str());
                     }
                 }
-                cout << "\n";
+                fprintf(out, "\n");
             }
-        }
 
+        }
 };
 
 int main(int argc, char* argv[]){
@@ -126,22 +134,20 @@ int main(int argc, char* argv[]){
     string cmdString = string(argv[header + 1]);
 
     if(cmdString.compare("-print") == 0){
-        int cols[256];
-        int n_cols = 0;
-
-        char* colNum = strtok(argv[header+2], ",");
+        vector<int> cols = vector<int>();
+        char* colNum = strtok(argv[header+2], " ,");
+        int j = 0;
         while(colNum != NULL){
-            cols[n_cols] = atoi(colNum);
-            n_cols++;
-            if((cols[n_cols] == 0) && (strcmp(colNum, "0") != 0)){
+            cols.push_back(atoi(colNum));
+            if((cols[j] == 0) && (strcmp(colNum, "0") != 0)){
                 cout << "COL INDEX ERROR\n";
                 exit(-1);
             }
+            colNum = strtok(NULL, " ,");
+            j++;
         }
-
-
-
         Table* t = new Table(argv[header+3], argv[header+4], header);
+        t->printCols(cols);
     }
     return 0;
 }
