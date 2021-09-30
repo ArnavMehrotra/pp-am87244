@@ -121,7 +121,7 @@ class Table{
                 }
                 fprintf(out, "\n");
             }
-
+            fclose(out);
         }
 };
 
