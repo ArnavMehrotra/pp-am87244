@@ -88,11 +88,14 @@ class Table{
 
             rows = r;
             cols = c;
+            t.close();
         }
 
         void printCols(vector<int> printCols){
+            //prints columns
             FILE* out = fopen(outFile.c_str(), "w");
 
+            //I decided to use fprintf for formatting reasons.
             if(!out){
                 cout << "OTHER ERROR\n";
             }
@@ -123,6 +126,23 @@ class Table{
             }
             fclose(out);
         }
+
+        void sumAndPrint(int col){
+            FILE* out = fopen(outFile.c_str(), "w");
+            double sum = 0; 
+            for(int i = 0; i<rows; i++){
+                if(values[i][col].type == STR){
+                    cout << "TYPE ERROR\n";
+                    exit(-1);
+                }
+                sum += values[i][col].val.num; 
+            } 
+            if(!header.empty()){
+                fprintf(out, "%s\n", header[col].c_str());
+            }
+            fprintf(out, "%.5g\n", sum);
+            fclose(out);
+        }
 };
 
 int main(int argc, char* argv[]){
@@ -148,6 +168,16 @@ int main(int argc, char* argv[]){
         }
         Table* t = new Table(argv[header+3], argv[header+4], header);
         t->printCols(cols);
+        delete t;
+    }
+    else if(cmdString.compare("-sum") == 0){
+        int col = atoi(argv[header+2]);
+        if((col == 0) && (strcmp(argv[header+2], "0") != 0)){
+            cout << "COL INDEX ERROR\n";
+            exit(-1);
+        }
+        Table* t = new Table(argv[header+3], argv[header+4], header);
+        t->sumAndPrint(col);
     }
     return 0;
 }
