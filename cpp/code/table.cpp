@@ -26,6 +26,8 @@ typedef union _value{
     double num;
 }Value;
 
+
+//class for a single table entry
 class TableEntry{
     public:
         TYPE type;
@@ -209,19 +211,23 @@ class Table{
 
 };
 
+//class for condition operation
 class Operation{
     OPTYPE type;
     public:
         Operation(OPTYPE type){
             this->type = type;
         }
-
+        
+        //eval the operation with this huge switch statement
         bool eval(TableEntry val1, TableEntry val2){
 
             if(val1.type != val2.type){
                 return false;
             }
 
+
+            //I just use strcmp to determine greater and less than for strings
             switch(this->type){
                 case EQ:{
                     if(val1.type == NUM){
@@ -264,7 +270,7 @@ class Operation{
         }
 };
 
-
+//class for condition statement
 class Condition{
     private:
         Operation* op;
@@ -275,6 +281,8 @@ class Condition{
         Condition(char* cond, Table* table){
             this->table = table;
             int opOffset = 1;
+
+            //read operation
             switch(cond[0]){
                 case '=':{
                     if(cond[1] == '='){
@@ -314,6 +322,7 @@ class Condition{
                 exit(-1);
             }
             
+            //read first token into value array
             switch(tok1[0]){
                 case '@':{
                     tok1 += 1;
@@ -368,6 +377,7 @@ class Condition{
                 }  
             }
 
+            //read second token into value array
             switch(tok2[0]){
                 case '@':{
                     tok2 += 1;
@@ -422,6 +432,8 @@ class Condition{
                 }  
             }
         }
+        
+        //evaluate value arrays using operand
         void eval(){
             vector<int> printedRows;
             for(int i = 0; i<vals1.size(); i++){
@@ -433,6 +445,7 @@ class Condition{
         }
 };
 
+//main program
 int main(int argc, char* argv[]){
     bool header = (strcmp(argv[1], "-header") == 0);
     string cmdString = string(argv[header + 1]);
