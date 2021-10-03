@@ -40,11 +40,6 @@ class TableEntry{
                         val.num = atof(valString);
                     }
         }
-        ~TableEntry(){
-            if(type == STR){
-                // delete val.str;
-            }
-        }
 };
 
 
@@ -60,6 +55,10 @@ class Table{
         Table(string tableFile, string out, bool head){
             outFile = out;
             ifstream t(tableFile.c_str());
+            if(!t){
+                cout << "OTHER ERROR\n";
+                exit(-1);
+            }
             string fileString;
             getline(t, fileString);
             int r = 0;
@@ -207,6 +206,7 @@ class Table{
             fprintf(out, "%.5g\n", sum);
             fclose(out);
         }
+
 };
 
 class Operation{
@@ -346,6 +346,12 @@ class Condition{
                         cout << "COND ERROR\n";
                         exit(-1);
                     }
+
+                    if(col >= table->getNumCols()){
+                        cout << "COND ERROR\n";
+                        exit(-1);
+                    }
+
                     string tokString = string(tok1);
                     vector<vector<TableEntry> > tableVals = table->getVals();
                     for(int i = 0; i<table->getNumRows(); i++){
@@ -394,6 +400,12 @@ class Condition{
                         cout << "COND ERROR\n";
                         exit(-1);
                     }
+
+                    if(col >= table->getNumCols()){
+                        cout << "COND ERROR\n";
+                        exit(-1);
+                    }
+
                     string tokString = string(tok2);
                     vector<vector<TableEntry> > tableVals = table->getVals();
                     for(int i = 0; i<table->getNumRows(); i++){
