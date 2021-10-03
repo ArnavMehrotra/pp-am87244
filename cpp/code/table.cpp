@@ -1,6 +1,7 @@
-
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -58,7 +59,7 @@ class Table{
     public:
         Table(string tableFile, string out, bool head){
             outFile = out;
-            ifstream t(tableFile);
+            ifstream t(tableFile.c_str());
             string fileString;
             getline(t, fileString);
             int r = 0;
