@@ -1,0 +1,5 @@
+code/Pharo*
+code/pharo*
+code/*.image
+code/*.changes
+Pharo/
