@@ -1,0 +1,7 @@
+
+*~
+
+# Compilation outcomes
+/code/*.out
+/code/*.cmo
+/code/*.cmi
