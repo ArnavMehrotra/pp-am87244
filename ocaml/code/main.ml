@@ -4,10 +4,17 @@
 remove_all list m returns a list in the same order as the input list,
 but with all the numbers equal to m removed. You may not use any
 library functions. *)
+let x = 1;;
+let rec remove_all list m = 
+    match list with
+    | [] -> []
+    | x::xs -> if(x == m) 
+        then remove_all xs m 
+        else x::(remove_all xs m);;
 
-let rec remove_all list m = failwith "not implemented"
 
-(* remove_all [2; 4; 3; 7; 2; 8; 2] 2;; *)
+(* let () = List.iter (Printf.printf "%d ") (remove_all [2; 4; 3; 7; 2; 8; 2] 2)
+Printf.printf "\n";; *)
 (* - : int list = [4; 3; 7; 8] *)
 
 (* Problem 2 *)
@@ -16,9 +23,17 @@ such that all_from_to m n p tells the number of integers greater than
 or equal to m and also less than or equal to n which satisfy a given
 predicate p : int -> bool.  You may not use any library functions. *)
 
-let rec all_from_to m n p = failwith "not implemented"
+let rec all_from_to m n p =
+    if m <= n then(
+        if p m
+            then 1+ all_from_to (m+1) n p
+            else all_from_to (m+1) n p
+    )
+    else 0;;
+    
 
-(* all_from_to (-5) 7 ((<) 0);; *)
+print_int (all_from_to (-5) 7 ((<) 0));;
+Printf.printf "\n";;
 (* - : int = 7 *)
 
 (* all_from_to 3 7 (fun x -> x mod 2 = 0);; *)
@@ -30,10 +45,18 @@ such that separate p l returns a pair of integers, the first indicates
 the number of elements of l for which p returns true, and the second
 indicates the number of elements for which p returns false. You may
 not use any library functions. *)
+let sum_pairs (i1, i2) (j1, j2) = (i1 + j1, i2 + j2);;
 
-let rec separate p l = failwith "not implemented"
+let rec separate p l =
+    match l with
+    | [] -> (0, 0)
+    | x::xs -> if p x then(sum_pairs (1, 0) (separate p xs))
+        else sum_pairs (0, 1) (separate p xs);;
+    
 
-(* separate (fun x -> x mod 2 = 0) [-3; 5; 2; -6];; *)
+let print_pair (x, y) = Printf.printf "%d %d\n" x y;;
+
+print_pair (separate (fun x -> x mod 2 = 0) [-3; 5; 2; -6]);;
 (* - : int * int = (2, 2) *)
 
 (* Problem 4 *)
@@ -41,7 +64,7 @@ let rec separate p l = failwith "not implemented"
 every element in the input list is even. You may use mod for testing
 whether an integer is even. You may not use any other library functions. *)
 
-let rec all_even list = failwith "not implemented"
+(* let rec all_even list = failwith "not implemented" *)
 
 (* all_even [4; 2; 12; 5; 6];; *)
 (* - : bool = false *)
@@ -52,7 +75,7 @@ sum_square m n calculates the sum of the squares of the elements
 strictly greater than m and strictly less than n if there are any, and
 0 otherwise. You may not use any library functions. *)
 
-let rec sum_square m n = failwith "not implemented"
+(* let rec sum_square m n = failwith "not implemented" *)
 
 (* sum_square 3 9;; *)
 (* - : int = 190 *)
@@ -64,7 +87,7 @@ concatenated together, with a single space inserted between
 consecutive elements. Also all strings equal to s should be
 excluded. You may not use any library functions. *)
 
-let rec concat s list = failwith "not implemented"
+(* let rec concat s list = failwith "not implemented" *)
 
 (* concat "hi" ["How"; "are"; "hi"; "you?"];; *)
 (* - : string = "How are you?" *)
@@ -80,8 +103,8 @@ int -> int list -> int list such that (fun list -> List.fold_right
 remove_all of Problem 1. There should be no use of recursion or
 library functions in defining remove_all_rec. *)
 
-let remove_all_base = failwith "not implemented"
-let remove_all_rec m n r = failwith "not implemented"
+(* let remove_all_base = failwith "not implemented"
+let remove_all_rec m n r = failwith "not implemented" *)
 
 (* (fun list -> List.fold_right (remove_all_rec 2) list remove_all_base) [2; 4; 3; 7; 2; 8; 2];; *)
 (* - : int list = [4; 3; 7; 8] *)
@@ -93,8 +116,8 @@ List.fold_right (separate_rec p) list separate_base) computes the same
 results as separate of Problem 3. There should be no use of recursion
 or library functions in defining separate_rec. *)
 
-let separate_base = failwith "not implemented"
-let separate_rec p x (tl, fl) = failwith "not implemented"
+(* let separate_base = failwith "not implemented"
+let separate_rec p x (tl, fl) = failwith "not implemented" *)
 
 (* (fun p -> fun list -> List.fold_right (separate_rec p) list separate_base) (fun x -> x mod 2 = 0) [-3; 5; 2; -6];; *)
 (* - : int * int = (2, 2) *)
@@ -106,8 +129,8 @@ the same results as all_even of Problem 4. You may use mod for testing
 whether an integer is even. There should be no use of recursion or
 other library functions in defining all_even_rec. *)
 
-let all_even_base = failwith "not implemented"
-let all_even_rec r x = failwith "not implemented"
+(* let all_even_base = failwith "not implemented"
+let all_even_rec r x = failwith "not implemented" *)
 
 (* List.fold_left all_even_rec all_even_base [4; 2; 12; 5; 6];; *)
 (* - : bool = false *)
@@ -118,7 +141,7 @@ computes the same results as concat of Problem 6. The definition of
 concat2 may use List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list ->
 'a but no direct use of recursion, and no other library functions. *)
 
-let concat2 s list = failwith "not implemented"
+(* let concat2 s list = failwith "not implemented" *)
 
 (* concat2 "hi" ["How"; "are"; "hi"; "you?"];; *)
 (* - : string = "How are you?" *)
