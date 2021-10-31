@@ -13,8 +13,8 @@ let rec remove_all list m =
         else x::(remove_all xs m);;
 
 
-(* let () = List.iter (Printf.printf "%d ") (remove_all [2; 4; 3; 7; 2; 8; 2] 2)
-Printf.printf "\n";; *)
+let () = List.iter (Printf.printf "%d ") (remove_all [2; 4; 3; 7; 2; 8; 2] 2);;
+Printf.printf "\n";;
 (* - : int list = [4; 3; 7; 8] *)
 
 (* Problem 2 *)
@@ -32,8 +32,7 @@ let rec all_from_to m n p =
     else 0;;
     
 
-print_int (all_from_to (-5) 7 ((<) 0));;
-Printf.printf "\n";;
+Printf.printf "%d\n" (all_from_to (-5) 7 ((<) 0));;
 (* - : int = 7 *)
 
 (* all_from_to 3 7 (fun x -> x mod 2 = 0);; *)
@@ -64,9 +63,13 @@ print_pair (separate (fun x -> x mod 2 = 0) [-3; 5; 2; -6]);;
 every element in the input list is even. You may use mod for testing
 whether an integer is even. You may not use any other library functions. *)
 
-(* let rec all_even list = failwith "not implemented" *)
+let rec all_even list =
+    match list with
+    | [] -> true
+    | x::xs -> if (x mod 2) == 1 then(false)
+        else all_even xs;;
 
-(* all_even [4; 2; 12; 5; 6];; *)
+if all_even [4; 2; 12; 5; 6] then(Printf.printf "true\n") else Printf.printf("false\n");;
 (* - : bool = false *)
 
 (* Problem 5 *)
@@ -75,9 +78,13 @@ sum_square m n calculates the sum of the squares of the elements
 strictly greater than m and strictly less than n if there are any, and
 0 otherwise. You may not use any library functions. *)
 
-(* let rec sum_square m n = failwith "not implemented" *)
+let rec sum_square m n =
+    let p = m + 1 in
+    if p < n then((p*p) + sum_square (p) n)
+    else 0;;
 
-(* sum_square 3 9;; *)
+let r = sum_square 2 6;;
+Printf.printf "%d\n" r;;
 (* - : int = 190 *)
 
 (* Problem 6 *)
@@ -87,9 +94,13 @@ concatenated together, with a single space inserted between
 consecutive elements. Also all strings equal to s should be
 excluded. You may not use any library functions. *)
 
-(* let rec concat s list = failwith "not implemented" *)
+let rec concat s list =
+    match list with
+    | [] -> ""
+    | x::xs -> if x = s then(concat s xs)
+        else (x ^ " " ^ concat s xs);;
 
-(* concat "hi" ["How"; "are"; "hi"; "you?"];; *)
+print_endline (concat "hi" ["How"; "are"; "hi"; "you?"]);;
 (* - : string = "How are you?" *)
 
 (* For problems 7 through 9, you will be supplying arguments to the
@@ -103,8 +114,8 @@ int -> int list -> int list such that (fun list -> List.fold_right
 remove_all of Problem 1. There should be no use of recursion or
 library functions in defining remove_all_rec. *)
 
-(* let remove_all_base = failwith "not implemented"
-let remove_all_rec m n r = failwith "not implemented" *)
+let remove_all_base = 0;;
+let remove_all_rec m n r = Printf.printf "%d \n" m;;
 
 (* (fun list -> List.fold_right (remove_all_rec 2) list remove_all_base) [2; 4; 3; 7; 2; 8; 2];; *)
 (* - : int list = [4; 3; 7; 8] *)
