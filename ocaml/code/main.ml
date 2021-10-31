@@ -114,10 +114,12 @@ int -> int list -> int list such that (fun list -> List.fold_right
 remove_all of Problem 1. There should be no use of recursion or
 library functions in defining remove_all_rec. *)
 
-let remove_all_base = 0;;
-let remove_all_rec m n r = Printf.printf "%d \n" m;;
+let remove_all_base = [];;
+let remove_all_rec m n r = if m != n then n::r else r;;
 
-(* (fun list -> List.fold_right (remove_all_rec 2) list remove_all_base) [2; 4; 3; 7; 2; 8; 2];; *)
+let pp = (fun list -> List.fold_right (remove_all_rec 2) list remove_all_base) [2; 4; 3; 7; 2; 8; 2];;
+List.iter(Printf.printf "%d ") pp;;
+Printf.printf "\n";;
 (* - : int list = [4; 3; 7; 8] *)
 
 (* Problem 8 *)
@@ -127,10 +129,11 @@ List.fold_right (separate_rec p) list separate_base) computes the same
 results as separate of Problem 3. There should be no use of recursion
 or library functions in defining separate_rec. *)
 
-(* let separate_base = failwith "not implemented"
-let separate_rec p x (tl, fl) = failwith "not implemented" *)
+let separate_base = (0, 0);;
+let separate_rec p x (tl, fl) = if p x then (tl+1, fl+1) else (tl, fl);;
 
-(* (fun p -> fun list -> List.fold_right (separate_rec p) list separate_base) (fun x -> x mod 2 = 0) [-3; 5; 2; -6];; *)
+let gg = (fun p -> fun list -> List.fold_right (separate_rec p) list separate_base) (fun x -> x mod 2 = 0) [-3; 5; 2; -6];;
+print_pair gg;;
 (* - : int * int = (2, 2) *)
 
 (* Problem 9 *)
@@ -140,10 +143,14 @@ the same results as all_even of Problem 4. You may use mod for testing
 whether an integer is even. There should be no use of recursion or
 other library functions in defining all_even_rec. *)
 
-(* let all_even_base = failwith "not implemented"
-let all_even_rec r x = failwith "not implemented" *)
+let all_even_base = true;;
+let all_even_rec r x = if r == false then false else(
+    let k = (x mod 2) == 1 in
+    if k then false else true
+);;
 
-(* List.fold_left all_even_rec all_even_base [4; 2; 12; 5; 6];; *)
+let bb = List.fold_left all_even_rec all_even_base [4; 2; 12; 5; 6];;
+if bb then Printf.printf "true\n" else Printf.printf "false\n";;
 (* - : bool = false *)
 
 (* Problem 10 *)
@@ -152,7 +159,12 @@ computes the same results as concat of Problem 6. The definition of
 concat2 may use List.fold_left : ('a -> 'b -> 'a) -> 'a -> 'b list ->
 'a but no direct use of recursion, and no other library functions. *)
 
-(* let concat2 s list = failwith "not implemented" *)
+let concat2_cond s a x = if x = s then a else (
+    if a = "" then a ^ x else a ^ " " ^ x
+);;
 
-(* concat2 "hi" ["How"; "are"; "hi"; "you?"];; *)
+let concat2 s list = 
+    List.fold_left (concat2_cond s) "" list;;
+
+print_endline (concat2 "hi" ["How"; "are"; "hi"; "you?"]);;
 (* - : string = "How are you?" *)
