@@ -92,6 +92,7 @@ excluded. You may not use any library functions. *)
 let rec concat s list =
     match list with
     | [] -> ""
+    | t::[] -> t
     | x::xs -> if x = s then(concat s xs)
         else (x ^ " " ^ concat s xs);;
 
