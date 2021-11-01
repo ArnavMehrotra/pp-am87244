@@ -13,8 +13,7 @@ let rec remove_all list m =
         else x::(remove_all xs m);;
 
 
-let () = List.iter (Printf.printf "%d ") (remove_all [2; 4; 3; 7; 2; 8; 2] 2);;
-Printf.printf "\n";;
+remove_all [2; 4; 3; 7; 2; 8; 2] 2;;
 (* - : int list = [4; 3; 7; 8] *)
 
 (* Problem 2 *)
@@ -32,10 +31,10 @@ let rec all_from_to m n p =
     else 0;;
     
 
-Printf.printf "%d\n" (all_from_to (-5) 7 ((<) 0));;
+all_from_to (-5) 7 ((<) 0);;
 (* - : int = 7 *)
 
-(* all_from_to 3 7 (fun x -> x mod 2 = 0);; *)
+all_from_to 3 7 (fun x -> x mod 2 = 0);;
 (* - : int = 2 *)
 
 (* Problem 3 *)
@@ -53,9 +52,7 @@ let rec separate p l =
         else sum_pairs (0, 1) (separate p xs);;
     
 
-let print_pair (x, y) = Printf.printf "%d %d\n" x y;;
-
-print_pair (separate (fun x -> x mod 2 = 0) [-3; 5; 2; -6]);;
+separate (fun x -> x mod 2 = 0) [-3; 5; 2; -6];;
 (* - : int * int = (2, 2) *)
 
 (* Problem 4 *)
@@ -69,7 +66,7 @@ let rec all_even list =
     | x::xs -> if (x mod 2) == 1 then(false)
         else all_even xs;;
 
-if all_even [4; 2; 12; 5; 6] then(Printf.printf "true\n") else Printf.printf("false\n");;
+all_even [4; 2; 12; 5; 6];;
 (* - : bool = false *)
 
 (* Problem 5 *)
@@ -83,8 +80,7 @@ let rec sum_square m n =
     if p < n then((p*p) + sum_square (p) n)
     else 0;;
 
-let r = sum_square 2 6;;
-Printf.printf "%d\n" r;;
+sum_square 2 6;;
 (* - : int = 190 *)
 
 (* Problem 6 *)
@@ -100,7 +96,7 @@ let rec concat s list =
     | x::xs -> if x = s then(concat s xs)
         else (x ^ " " ^ concat s xs);;
 
-print_endline (concat "hi" ["How"; "are"; "hi"; "you?"]);;
+concat "hi" ["How"; "are"; "hi"; "you?"];;
 (* - : string = "How are you?" *)
 
 (* For problems 7 through 9, you will be supplying arguments to the
@@ -117,9 +113,7 @@ library functions in defining remove_all_rec. *)
 let remove_all_base = [];;
 let remove_all_rec m n r = if m != n then n::r else r;;
 
-let pp = (fun list -> List.fold_right (remove_all_rec 2) list remove_all_base) [2; 4; 3; 7; 2; 8; 2];;
-List.iter(Printf.printf "%d ") pp;;
-Printf.printf "\n";;
+(fun list -> List.fold_right (remove_all_rec 2) list remove_all_base) [2; 4; 3; 7; 2; 8; 2];;
 (* - : int list = [4; 3; 7; 8] *)
 
 (* Problem 8 *)
@@ -132,8 +126,7 @@ or library functions in defining separate_rec. *)
 let separate_base = (0, 0);;
 let separate_rec p x (tl, fl) = if p x then (tl+1, fl+1) else (tl, fl);;
 
-let gg = (fun p -> fun list -> List.fold_right (separate_rec p) list separate_base) (fun x -> x mod 2 = 0) [-3; 5; 2; -6];;
-print_pair gg;;
+(fun p -> fun list -> List.fold_right (separate_rec p) list separate_base) (fun x -> x mod 2 = 0) [-3; 5; 2; -6];;
 (* - : int * int = (2, 2) *)
 
 (* Problem 9 *)
@@ -149,8 +142,7 @@ let all_even_rec r x = if r == false then false else(
     if k then false else true
 );;
 
-let bb = List.fold_left all_even_rec all_even_base [4; 2; 12; 5; 6];;
-if bb then Printf.printf "true\n" else Printf.printf "false\n";;
+List.fold_left all_even_rec all_even_base [4; 2; 12; 5; 6];;
 (* - : bool = false *)
 
 (* Problem 10 *)
@@ -166,5 +158,5 @@ let concat2_cond s a x = if x = s then a else (
 let concat2 s list = 
     List.fold_left (concat2_cond s) "" list;;
 
-print_endline (concat2 "hi" ["How"; "are"; "hi"; "you?"]);;
+concat2 "hi" ["How"; "are"; "hi"; "you?"];;
 (* - : string = "How are you?" *)
