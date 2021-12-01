@@ -1,8 +1,10 @@
-import java.util.Arrays;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class Main {
     static final String JDBC_DRIVER = "org.h2.Driver";   
@@ -91,6 +93,7 @@ public class Main {
                 line = tableReader.readLine();
                 row++;
             }
+            tableReader.close();
             stmt.close();
             return n_cols;
         }
@@ -126,20 +129,42 @@ public class Main {
                 }
                 res.close();
             }            
+            PrintWriter p = new PrintWriter(outFileString);
             if(maxCol == -1){
-                //empty file
+                p.println("");
+                p.close();
                 s.close();
                 return;
             }
             ResultSet res = s.executeQuery("SELECT strval FROM MATRIX WHERE (t=0) AND c=" + maxCol + ";");
             res.next();
-            System.out.println(res.getString("strval"));
+            p.println(res.getString("strval"));
+            res.close();
+            res = s.executeQuery("SELECT t, strval, intval, fltval, r FROM MATRIX WHERE c=" + maxCol + ";");
+            ArrayList<String> a = new ArrayList<>(Collections.nCopies(n_cols, ""));
+            while(res.next()){
+                int type = res.getInt("t");
+                if(type == 1){
+                    a.set(res.getInt("r"), Integer.toString(res.getInt("intval")));
+                }
+                else if(type == 2){
+                    a.set(res.getInt("r"), Float.toString(res.getFloat("fltval")));
+                }
+                else if(type == 3){
+                    a.set(res.getInt("r"), res.getString("strval"));
+                }
+            }
             res.close();
             s.close();
+            for(int i = 0; i<n_cols; i++){
+                p.println(a.get(i));
+            }
+            p.close();
         }
         catch(Exception e){
             e.printStackTrace();
             System.out.println("OTHER ERROR");
         }
     }
+
 }
