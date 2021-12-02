@@ -36,7 +36,6 @@ public class Main {
             s.executeUpdate(ct);
             s.close();
             outTable(conn, args[1], readTable(conn, args[0]));
-            System.out.println("success");
             conn.close();
         }
         catch(Exception e){
